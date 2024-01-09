@@ -8,12 +8,13 @@ use Illuminate\Support\Str;
 
 
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use App\Models\Cliente;
 
 class clienteController extends Controller
 {
-    public function oneRef(Request $request)
-    {   
+
+    public function oneRef(Request $request) {   
         // Obtener parámetros de consulta
         $id = $request->input('id');
         $reference = $request->input('reference');
@@ -36,10 +37,9 @@ class clienteController extends Controller
     
         return response()->json($clientes);
     }
-    
 
-    public function create(Request $request)
-    {
+    
+    public function create(Request $request) {
         $rules = [
             'name' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
@@ -52,7 +52,7 @@ class clienteController extends Controller
             'email.required' => 'El campo email es obligatorio.',
             'email.email' => 'El email debe ser una dirección de correo válida.',
             'lastname.required' => 'El campo lastname es obligatorio.',
-            'phone.required' => 'El teléfono es requerido', // Corregido aquí
+            'phone.required' => 'El teléfono es requerido',
         ];
         
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -64,10 +64,12 @@ class clienteController extends Controller
 
         $request['reference'] = $reference;
         $price = $request['price'];
+        $number_tickets = $request['number_raffle'];
 
         $integrityHash = $this->generateIntegrityHash($request);
 
         $request['hash_integrity'] = $integrityHash;
+        $request['quantity_numbers'] = $number_tickets;
 
         $cliente = Cliente::create($request->all());
         return response()->json(
@@ -81,6 +83,7 @@ class clienteController extends Controller
         );
     }
 
+
     private function generateIntegrityHash($request)
     {
         $referencia = $request['reference'];
@@ -93,9 +96,7 @@ class clienteController extends Controller
     }
 
 
-    
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         try {
         $rules = [
             "reference" => 'required|string|max:255',
@@ -123,6 +124,70 @@ class clienteController extends Controller
         return response()->json(['error' => 'cliente no encontrado'], 404);
         }
     }
+
+
+    public function handleWebhook(Request $request) {
+
+        try {
+        $secret = 'test_events_gvuFd3BB5XyJ9iObrfE8ZytRkQMRQGBh'; // Reemplaza con tu secreto proporcionado por Wompi
+
+        $data = $request->json()->all();
+
+        $transactionId = $data['data']['transaction']['id'];
+        $status = $data['data']['transaction']['status'];
+        $reference = $data['data']['transaction']['reference'];
+        
+        $cliente = Cliente::where('reference', $reference)->first();
+
+        if ($cliente) {
+            // Asocia el transactionId con el cliente
+            $cliente->update(['transaction_id' => $transactionId]);
+            $cliente->update(['status' => $status]);
+
+            if ($status==='APPROVED') {
+                $number_tickets = $cliente -> quantity_numbers;
+                $numerRaffle = $this->generarNumerosRifa($cliente->id, $number_tickets);
+                $cliente->update(['numbersR' => $numerRaffle]);
+            }
+
+        } else {
+            Log::error('Cliente no encontrado para la referencia: ' . $reference);
+            return response()->json(['error' => 'Cliente no encontrado'], 404);
+        }
+
+        return response()->json(['success' => true,'transactionId' => $transactionId]);
+
+        } catch (\Exception $e) {
+            Log::error('Error en el controlador de Wompi: ' . $e->getMessage());
+            return response()->json(['error' => 'Internal Server Error papu'], 500);
+        }
+    }
+
+
+    private function generarNumerosRifa($clienteId, $numeroTickets) {
+        // Buscar el último cliente que ya tiene números de rifa asignados
+        $ultimoClienteConNumeros = Cliente::whereNotNull('numbersR')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $ultimoNumeroRifa = $ultimoClienteConNumeros ? json_decode                          ($ultimoClienteConNumeros->numbersR, true) : [];
+
+        $ultimoNumero = end($ultimoNumeroRifa) ?? 0;
+
+        $nuevosNumeros = [];
+
+        for ($i = 1; $i <= $numeroTickets; $i++) {
+            $nuevoNumero = $ultimoNumero + $i;
+            $nuevosNumeros[] = $nuevoNumero;
+        }
+
+        Cliente::where('id', $clienteId)->update(['numbersR' => json_encode($nuevosNumeros)]);
+
+        $nuevosNumerosJSON = json_encode($nuevosNumeros);
+
+        return $nuevosNumerosJSON;
+    }
+    
 }
 
 

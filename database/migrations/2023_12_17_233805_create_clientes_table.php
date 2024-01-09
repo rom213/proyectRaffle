@@ -19,9 +19,11 @@ return new class extends Migration
             $table->string('city')->nullable();
             $table->string('address')->nullable();
             $table->string('phone');
-            $table->string('numbersR')->nullable();
+            $table->integer('quantity_numbers')->nullable();
+            $table->json('numbersR')->nullable();
             $table->string('email');
             $table->string('reference')->nullable();
+            $table->string('transaction_id')->nullable();
             $table->string('status')->default('inactive');
             $table->timestamps();
         });

@@ -21,6 +21,8 @@ class Cliente extends Model
         'numbersR',
         'email',
         'reference',
+        'transaction_id',
+        'quantity_numbers',
         'status',
     ];
 }

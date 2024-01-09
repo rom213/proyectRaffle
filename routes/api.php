@@ -25,3 +25,5 @@ Route::get('/get', [clienteController::class, 'oneRef']);
 Route::post('/post', [clienteController::class, 'create']);
 
 Route::patch('/patch/{id}', [clienteController::class, 'update']);
+
+Route::post('/wompi-webhook', [clienteController::class, 'handleWebhook']);
