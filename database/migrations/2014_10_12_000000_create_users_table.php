@@ -25,8 +25,15 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
+    public function down()
     {
+        // Desactivar restricciones de clave externa
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+    
         Schema::dropIfExists('users');
+    
+        // Reactivar restricciones de clave externa
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }
+    
 };

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\clienteController;
+use App\Http\Controllers\ProgressbarController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +22,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/get', [clienteController::class, 'oneRef']);
+
+Route::get('/progressbar/{id}', [ProgressbarController::class, 'show']);
 
 Route::post('/post', [clienteController::class, 'create']);
 
