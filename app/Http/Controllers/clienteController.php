@@ -15,27 +15,24 @@ class clienteController extends Controller
 {
 
     public function oneRef(Request $request) {   
-        // Obtener parámetros de consulta
-        $id = $request->input('id');
-        $reference = $request->input('reference');
+        $transaction_id = $request->input('transaction_id');
         
-        // Construir consulta
         $query = Cliente::query();
     
-        if ($id) {
-            $query->where('id', $id);
+        if ($transaction_id) {
+            $query->where('transaction_id', '=', $transaction_id);
+        } else {
+            return response()->json(['error' => 'transactionId is required'], 400);
         }
     
-        if ($reference) {
-            $query->where('reference', '=', $reference); // Cambiado a igual (=) para una coincidencia exacta
+        $client = $query->get();
+
+        if ($client->isEmpty()) {
+            return response()->json(['error' => 'transactionId not found'], 404);
         }
     
-        // Agrega más condiciones según tus necesidades
-    
-        // Ejecutar consulta
-        $clientes = $query->get();
-    
-        return response()->json($clientes);
+        $numbersRaffle = $client->pluck('numbersR')->first();
+        return response()->json(['numbersR' => json_decode($numbersRaffle)]);
     }
 
     
@@ -178,7 +175,8 @@ class clienteController extends Controller
 
         for ($i = 1; $i <= $numeroTickets; $i++) {
             $nuevoNumero = $ultimoNumero + $i;
-            $nuevosNumeros[] = $nuevoNumero;
+            $nuevoNumeroFormateado = str_pad($nuevoNumero, 4, '0', STR_PAD_LEFT);
+            $nuevosNumeros[] = $nuevoNumeroFormateado;
         }
 
         Cliente::where('id', $clienteId)->update(['numbersR' => json_encode($nuevosNumeros)]);
