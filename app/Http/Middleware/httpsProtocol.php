@@ -6,18 +6,21 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class httpsProtocol
+class HttpsProtocol
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function handle(Request $request, Closure $next): Response
     {
         if (!$request->secure()) {
-            return redirec()->secure($request->getRequestUri());
+            return redirect()->secure($request->getRequestUri());
         }
+
         return $next($request);
     }
 }
