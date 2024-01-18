@@ -41,13 +41,9 @@ class ClienteResource extends Resource
                     ->tel()
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('numbersR')
-                    ->maxLength(255),
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('reference')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('status')
                     ->required()
@@ -76,18 +72,8 @@ class ClienteResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('reference')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

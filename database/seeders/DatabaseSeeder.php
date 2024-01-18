@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
+use App\Models\Progressbar;
 use App\Models\User;
 
 class DatabaseSeeder extends Seeder
@@ -24,8 +25,15 @@ class DatabaseSeeder extends Seeder
             'name' => 'roma',
             'email' => 'roma@gmail.com',
         ]);
+
+        $user2 = User::factory()->create([
+            'name' => 'brayan',
+            'email' => 'brayan@gmail.com',
+        ]);
         
         $role = Role::create(['name' => 'Admin']);
+        Progressbar::create(['status' => '100']);
+        
         $user->assignRole($role);
     }
 }
